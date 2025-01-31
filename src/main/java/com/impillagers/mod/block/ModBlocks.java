@@ -1,4 +1,4 @@
-package com.impillagers.block;
+package com.impillagers.mod.block;
 
 import com.impillagers.mod.Impillagers;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;

@@ -1,5 +1,8 @@
 {
   "item.impillagers.pink_garnet": "Pink Garnet",
+  "item.impillagers.impillager_spawn_egg": "Impillager Spawn Egg",
 
-  "block.impillagers.pink_garnet_block": "Pink Garnet Block"
+  "block.impillagers.pink_garnet_block": "Pink Garnet Block",
+
+  "entity.impillagers.impillager": "Impillager"
 }
