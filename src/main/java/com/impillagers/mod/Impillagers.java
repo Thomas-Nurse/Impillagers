@@ -1,5 +1,6 @@
 package com.impillagers.mod;
 
+import com.impillagers.block.ModBlocks;
 import com.impillagers.mod.item.ModItems;
 import net.fabricmc.api.ModInitializer;
 
@@ -13,5 +14,6 @@ public class Impillagers implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModItems.registerModItems();
+		ModBlocks.registerModBlocks();
 	}
 }
