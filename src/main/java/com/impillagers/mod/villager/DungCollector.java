@@ -14,7 +14,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.poi.PointOfInterestType;
 
-public class ModVillagers {
+public class DungCollector {
 
     public static final RegistryKey<PointOfInterestType> DUNG_COLLECTOR_POI_KEY = registerPoiKey("dung_collector_poi");
     public static final PointOfInterestType DUNG_COLLECTOR_POI = registerPOI("dung_collector_poi", ModBlocks.DUNG_BLOCK);
@@ -36,7 +36,7 @@ public class ModVillagers {
         return RegistryKey.of(RegistryKeys.POINT_OF_INTEREST_TYPE, Identifier.of(Impillagers.MOD_ID, name));
     }
 
-    public static void registerVillagers() {
-        Impillagers.LOGGER.info("Registering Villagers for " + Impillagers.MOD_ID);
+    public static void registerVillager() {
+        Impillagers.LOGGER.info("Registering Dung Collector Villager for " + Impillagers.MOD_ID);
     }
 }
