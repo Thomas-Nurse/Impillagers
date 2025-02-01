@@ -21,6 +21,7 @@ public class Impillagers implements ModInitializer {
 		ModEntities.registerModEntities();
 
 
-		FabricDefaultAttributeRegistry.register(ModEntities.IMPILLAGER, ImpillagerEntity.createAttributes());
+		FabricDefaultAttributeRegistry.register(ModEntities.IMPILLAGER, ImpillagerEntity.createVillagerAttributes());
+
 	}
 }

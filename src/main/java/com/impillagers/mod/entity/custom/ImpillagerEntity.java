@@ -1,37 +1,43 @@
 package com.impillagers.mod.entity.custom;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.impillagers.mod.entity.ModEntities;
 import com.impillagers.mod.item.ModItems;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.brain.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.Ingredient;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.village.TradeOffer;
+import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.poi.PointOfInterestType;
 
-public class ImpillagerEntity extends MerchantEntity {
+import java.util.Map;
+import java.util.function.BiPredicate;
+
+public class ImpillagerEntity extends VillagerEntity {
     public final AnimationState idleAnimationState = new AnimationState();
     private int idleAnimationTimeout = 0;
 
-    public ImpillagerEntity(EntityType<? extends MerchantEntity> entityType, World world) {
+    public ImpillagerEntity(EntityType<? extends VillagerEntity> entityType, World world) {
         super(entityType, world);
     }
-
+/*
     @Override
     protected void initGoals() {
         this.goalSelector.add(0,new SwimGoal(this));
@@ -42,12 +48,13 @@ public class ImpillagerEntity extends MerchantEntity {
         this.goalSelector.add(3, new LookAtEntityGoal(this, PlayerEntity.class, 4.0F));
         this.goalSelector.add(4, new LookAroundGoal(this));
     }
-
-    public static DefaultAttributeContainer.Builder createAttributes() {
+*/
+    public static DefaultAttributeContainer.Builder createVillagerAttributes() {
         return MobEntity.createMobAttributes()
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, 18)
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.35)
-                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1);
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, 8)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 1)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1)
+                .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0);
     }
 
     private void setupAnimationStates(){
@@ -62,24 +69,26 @@ public class ImpillagerEntity extends MerchantEntity {
     @Override
     public void tick() {
         super.tick();
-
+        if (this.getHeadRollingTimeLeft() > 0) {
+            this.setHeadRollingTimeLeft(this.getHeadRollingTimeLeft() - 1);
+        }
         if (this.getWorld().isClient()) {
             this.setupAnimationStates();
         }
     }
-
+/*
     @Override
     protected void afterUsing(TradeOffer offer) {
 
     }
-
+*//*
     @Override
     protected void fillRecipes() {
 
     }
-
+*/
     @Override
-    public @Nullable PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {
+    public VillagerEntity createChild(ServerWorld world, PassiveEntity entity) {
         return ModEntities.IMPILLAGER.create(world);
     }
 
@@ -114,7 +123,7 @@ public class ImpillagerEntity extends MerchantEntity {
     }
 
     private void sayNo() {
-        this.setHeadRollingTimeLeft(40);
+        this.setHeadRollingTimeLeft(20);
         if (!this.getWorld().isClient()) {
             this.playSound(SoundEvents.ENTITY_VILLAGER_NO);
         }
@@ -123,19 +132,11 @@ public class ImpillagerEntity extends MerchantEntity {
     private void beginTradeWith(PlayerEntity customer) {
         this.prepareOffersFor(customer);
         this.setCustomer(customer);
-        this.sendOffers(customer, this.getDisplayName(), /*this.getVillagerData().getLevel()*/ 1);
+        this.sendOffers(customer, this.getDisplayName(), this.getVillagerData().getLevel());
     }
 
-    @Override
-    public void setCustomer(@Nullable PlayerEntity customer) {
-        boolean bl = this.getCustomer() != null && customer == null;
-        super.setCustomer(customer);
-        if (bl) {
-            this.resetCustomer();
-        }
-    }
     private void prepareOffersFor(PlayerEntity player) {
-        int i = 1; //this.getReputation(player);
+        int i = this.getReputation(player);
         if (i != 0) {
             for (TradeOffer tradeOffer : this.getOffers()) {
                 tradeOffer.increaseSpecialPrice(-MathHelper.floor((float) i * tradeOffer.getPriceMultiplier()));

@@ -7,6 +7,7 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
@@ -66,6 +67,18 @@ public class ImpillagerModel<T extends ImpillagerEntity> extends SinglePartEntit
     public void setAngles(ImpillagerEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         this.getPart().traverse().forEach(ModelPart::resetTransform);
         this.setHeadAngles(netHeadYaw, headPitch);
+
+        boolean bl = false;
+            bl = ((MerchantEntity)entity).getHeadRollingTimeLeft() > 0;
+
+        this.head.yaw = netHeadYaw * (float) (Math.PI / 180.0);
+        this.head.pitch = headPitch * (float) (Math.PI / 180.0);
+        if (bl) {
+            this.head.roll = 0.3F * MathHelper.sin(1.6F * ageInTicks);
+            this.head.pitch = 0.4F;
+        } else {
+            this.head.roll = 0.0F;
+        }
 
         this.animateMovement(ImpillagerAnimations.WALKING, limbSwing, limbSwingAmount, 2f, 2.5f);
         this.updateAnimation(entity.idleAnimationState, ImpillagerAnimations.IDLE, ageInTicks, 1f);
