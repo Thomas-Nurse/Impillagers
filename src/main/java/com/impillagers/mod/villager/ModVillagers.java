@@ -5,7 +5,6 @@ import net.fabricmc.fabric.api.object.builder.v1.world.poi.PointOfInterestHelper
 import com.impillagers.mod.Impillagers;
 import com.impillagers.mod.block.ModBlocks;
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -30,7 +29,7 @@ public class ModVillagers {
 
     private static PointOfInterestType registerPOI(String name, Block block) {
         return PointOfInterestHelper.register(Identifier.of(Impillagers.MOD_ID, name),
-                1, 10, block);
+                1, 1, block);
     }
 
     private static RegistryKey<PointOfInterestType> registerPoiKey(String name) {

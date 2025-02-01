@@ -8,15 +8,10 @@ import com.impillagers.mod.Impillagers;
 import com.impillagers.mod.entity.custom.ImpillagerEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
-import net.minecraft.client.render.entity.model.WolfEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.village.VillagerProfession;
 import com.impillagers.mod.villager.ModVillagers;
@@ -72,12 +67,13 @@ public class ImpillagerProfessionFeatureRenderer extends FeatureRenderer<Impilla
             float headYaw,
             float headPitch
     ) {
-       // if (!ImpillagerEntity.isInvisible()) {
-            VillagerProfession impillagerProfession = impillagerEntity.getVillagerData().getProfession();
-            if (impillagerProfession != VillagerProfession.NONE) {
-                Identifier identifier = (Identifier) PROFESSION_TEXTURES.get(impillagerProfession);
-                renderModel(this.getContextModel(), identifier, matrixStack, vertexConsumerProvider, light, impillagerEntity, -1);
-           // }
+
+        VillagerProfession impillagerProfession = impillagerEntity.getVillagerData().getProfession();
+
+        if (impillagerProfession != VillagerProfession.NONE) {
+            Identifier identifier = (Identifier) PROFESSION_TEXTURES.get(impillagerProfession);
+            renderModel(this.getContextModel(), identifier, matrixStack, vertexConsumerProvider, light, impillagerEntity, -1);
         }
     }
 }
+

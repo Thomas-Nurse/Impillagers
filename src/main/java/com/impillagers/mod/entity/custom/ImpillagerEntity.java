@@ -30,18 +30,6 @@ public class ImpillagerEntity extends VillagerEntity {
     public ImpillagerEntity(EntityType<? extends VillagerEntity> entityType, World world) {
         super(entityType, world);
     }
-/*
-    @Override
-    protected void initGoals() {
-        this.goalSelector.add(0,new SwimGoal(this));
-
-        this.goalSelector.add(1,new TemptGoal(this, 1.25D, Ingredient.ofItems(ModItems.PINK_GARNET), true));
-
-        this.goalSelector.add(2, new WanderAroundFarGoal(this,1.0D));
-        this.goalSelector.add(3, new LookAtEntityGoal(this, PlayerEntity.class, 4.0F));
-        this.goalSelector.add(4, new LookAroundGoal(this));
-    }
-*/
     public static DefaultAttributeContainer.Builder createVillagerAttributes() {
         return MobEntity.createMobAttributes()
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 8)
@@ -89,17 +77,7 @@ public class ImpillagerEntity extends VillagerEntity {
             this.setupAnimationStates();
         }
     }
-/*
-    @Override
-    protected void afterUsing(TradeOffer offer) {
 
-    }
-*//*
-    @Override
-    protected void fillRecipes() {
-
-    }
-*/
     @Override
     public VillagerEntity createChild(ServerWorld world, PassiveEntity entity) {
         return ModEntities.IMPILLAGER.create(world);
@@ -120,8 +98,6 @@ public class ImpillagerEntity extends VillagerEntity {
                     if (bl) {
                         this.sayNo();
                     }
-
-                    //player.incrementStat(Stats.TALKED_TO_VILLAGER);
                 }
 
                 if (bl) {
