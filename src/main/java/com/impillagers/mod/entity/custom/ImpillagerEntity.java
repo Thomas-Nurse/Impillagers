@@ -1,34 +1,27 @@
 package com.impillagers.mod.entity.custom;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+
 import com.impillagers.mod.entity.ModEntities;
 import com.impillagers.mod.item.ModItems;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.brain.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.village.TradeOffer;
-import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.World;
-import net.minecraft.world.poi.PointOfInterestType;
-
-import java.util.Map;
-import java.util.function.BiPredicate;
+import org.jetbrains.annotations.Nullable;
 
 public class ImpillagerEntity extends VillagerEntity {
     public final AnimationState idleAnimationState = new AnimationState();
@@ -64,6 +57,26 @@ public class ImpillagerEntity extends VillagerEntity {
         } else {
             --this.idleAnimationTimeout;
         }
+    }
+
+    @Nullable
+    @Override
+    protected SoundEvent getAmbientSound() {
+        if (this.isSleeping()) {
+            return null;
+        } else {
+            return this.hasCustomer() ? SoundEvents.ENTITY_VILLAGER_TRADE : SoundEvents.ENTITY_VILLAGER_AMBIENT;
+        }
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return SoundEvents.ENTITY_VILLAGER_HURT;
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return SoundEvents.ENTITY_VILLAGER_DEATH;
     }
 
     @Override

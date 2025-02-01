@@ -4,6 +4,7 @@ import com.impillagers.mod.block.ModBlocks;
 import com.impillagers.mod.entity.ModEntities;
 import com.impillagers.mod.entity.custom.ImpillagerEntity;
 import com.impillagers.mod.item.ModItems;
+import com.impillagers.mod.villager.ModVillagers;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
@@ -19,7 +20,7 @@ public class Impillagers implements ModInitializer {
 		ModItems.registerModItems();
 		ModBlocks.registerModBlocks();
 		ModEntities.registerModEntities();
-
+		ModVillagers.registerVillagers();
 
 		FabricDefaultAttributeRegistry.register(ModEntities.IMPILLAGER, ImpillagerEntity.createVillagerAttributes());
 

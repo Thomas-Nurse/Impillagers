@@ -1,8 +1,9 @@
 {
-  "item.impillagers.pink_garnet": "Pink Garnet",
+  "item.impillagers.dung_ball": "Piece of Dung",
   "item.impillagers.impillager_spawn_egg": "Impillager Spawn Egg",
 
-  "block.impillagers.pink_garnet_block": "Pink Garnet Block",
+  "block.impillagers.dung_block": "Dung Block",
 
-  "entity.impillagers.impillager": "Impillager"
+  "entity.impillagers.impillager": "Impillager",
+  "entity.impillagers.impillager.dung_collector": "Dung Collector"
 }

@@ -7,6 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
+import net.minecraft.item.ShovelItem;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.sound.BlockSoundGroup;
@@ -14,11 +15,11 @@ import net.minecraft.util.Identifier;
 
 public class ModBlocks {
     //New Blocks
-    public static final Block PINK_GARNET_BLOCK = registerBlock("pink_garnet_block",
+    public static final Block DUNG_BLOCK = registerBlock("dung_block",
             new Block(AbstractBlock.Settings.create()
-                    .strength(4f)
+                    .strength(1f)
                     .requiresTool()
-                    .sounds(BlockSoundGroup.AMETHYST_BLOCK)));
+                    .sounds(BlockSoundGroup.MUD)));
 
     //Block Registering Helpers
     private static Block registerBlock(String name, Block block) {
@@ -36,7 +37,7 @@ public class ModBlocks {
 
         //Adding Blocks to Creative Inventory Categories
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.BUILDING_BLOCKS).register(fabricItemGroupEntries -> {
-            fabricItemGroupEntries.add(ModBlocks.PINK_GARNET_BLOCK);
+            fabricItemGroupEntries.add(ModBlocks.DUNG_BLOCK);
         });
     }
 }
