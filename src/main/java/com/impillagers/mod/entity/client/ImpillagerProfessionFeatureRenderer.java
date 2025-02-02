@@ -29,6 +29,7 @@ public class ImpillagerProfessionFeatureRenderer extends FeatureRenderer<Impilla
             Map.entry(VillagerProfession.FISHERMAN, Identifier.of(Impillagers.MOD_ID, "textures/entity/impillager/impillager_fisherman.png")),
             Map.entry(VillagerProfession.FLETCHER, Identifier.of(Impillagers.MOD_ID, "textures/entity/impillager/impillager_fletcher.png")),
             Map.entry(VillagerProfession.LEATHERWORKER, Identifier.of(Impillagers.MOD_ID, "textures/entity/impillager/impillager_leatherworker.png")),
+            Map.entry(VillagerProfession.LIBRARIAN, Identifier.of(Impillagers.MOD_ID, "textures/entity/impillager/impillager_librarian.png")),
             Map.entry(VillagerProfession.MASON, Identifier.of(Impillagers.MOD_ID, "textures/entity/impillager/impillager_mason.png")),
             Map.entry(VillagerProfession.SHEPHERD, Identifier.of(Impillagers.MOD_ID, "textures/entity/impillager/impillager_shepherd.png")),
             Map.entry(VillagerProfession.TOOLSMITH, Identifier.of(Impillagers.MOD_ID, "textures/entity/impillager/impillager_toolsmith.png")),
