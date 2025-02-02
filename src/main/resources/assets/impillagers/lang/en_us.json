@@ -5,5 +5,22 @@
   "block.impillagers.dung_block": "Dung Block",
 
   "entity.impillagers.impillager": "Impillager",
-  "entity.impillagers.impillager.dung_collector": "Dung Collector"
+  "entity.impillagers.impillager.armorer": "Impillager Armorer",
+  "entity.impillagers.impillager.butcher": "Impillager Butcher",
+  "entity.impillagers.impillager.cartographer": "Impillager Cartographer",
+  "entity.impillagers.impillager.cleric": "Impillager Cleric",
+  "entity.impillagers.impillager.farmer": "Impillager Farmer",
+  "entity.impillagers.impillager.fisherman": "Impillager Fisherman",
+  "entity.impillagers.impillager.fletcher": "Impillager Fletcher",
+  "entity.impillagers.impillager.leatherworker": "Impillager Leatherworker",
+  "entity.impillagers.impillager.librarian": "Impillager Librarian",
+  "entity.impillagers.impillager.mason": "Impillager Mason",
+  "entity.impillagers.impillager.shepherd": "Impillager Shepherd",
+  "entity.impillagers.impillager.toolsmith": "Impillager Toolsmith",
+  "entity.impillagers.impillager.weaponsmith": "Impillager Weaponsmith",
+  "entity.impillagers.impillager.nitwit": "Impillager Nitwit",
+  "entity.impillagers.impillager.dung_collector": "Dung Collector",
+  "entity.minecraft.villager.dung_collector": "Villager Dung Collector",
+  "entity.impillagers.impillager.banker": "Banker",
+  "entity.minecraft.villager.banker": "Villager Banker"
 }
