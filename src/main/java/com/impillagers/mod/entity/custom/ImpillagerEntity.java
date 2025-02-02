@@ -39,6 +39,7 @@ public class ImpillagerEntity extends VillagerEntity {
 
     public ImpillagerEntity(EntityType<? extends VillagerEntity> entityType, World world) {
         super(entityType, world);
+        this.experiencePoints = 3;
     }
 
     //Attributes
@@ -123,11 +124,6 @@ public class ImpillagerEntity extends VillagerEntity {
             SensorType.SECONDARY_POIS,
             SensorType.GOLEM_DETECTED
     );
-
-    @Override
-    public boolean canBeLeashed() {
-        return true;
-    }
 
     @Override
     public Brain<VillagerEntity> getBrain() {
@@ -215,6 +211,23 @@ public class ImpillagerEntity extends VillagerEntity {
     @Override
     public VillagerEntity createChild(ServerWorld world, PassiveEntity entity) {
         return ModEntities.IMPILLAGER.create(world);
+    }
+
+    //Traits
+
+    @Override
+    public boolean canBeLeashed() {
+        return true;
+    }
+
+    @Override
+    public boolean shouldDropXp() {
+        return true;
+    }
+
+    @Override
+    protected int getXpToDrop() {
+        return this.experiencePoints;
     }
 
     //Trade with Player
