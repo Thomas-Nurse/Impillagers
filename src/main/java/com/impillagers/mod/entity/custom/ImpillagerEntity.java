@@ -108,7 +108,9 @@ public class ImpillagerEntity extends VillagerEntity {
             MemoryModuleType.LAST_WOKEN,
             MemoryModuleType.LAST_WORKED_AT_POI,
             MemoryModuleType.GOLEM_DETECTED_RECENTLY,
-            MemoryModuleType.ATTACK_TARGET
+            MemoryModuleType.ATTACK_TARGET,
+            MemoryModuleType.ATTACK_COOLING_DOWN,
+            MemoryModuleType.AVOID_TARGET
     );
     private static final ImmutableList<SensorType<? extends Sensor<? super VillagerEntity>>> SENSORS = ImmutableList.of(
             SensorType.NEAREST_LIVING_ENTITIES,
@@ -121,6 +123,11 @@ public class ImpillagerEntity extends VillagerEntity {
             SensorType.SECONDARY_POIS,
             SensorType.GOLEM_DETECTED
     );
+
+    @Override
+    public boolean canBeLeashed() {
+        return true;
+    }
 
     @Override
     public Brain<VillagerEntity> getBrain() {
