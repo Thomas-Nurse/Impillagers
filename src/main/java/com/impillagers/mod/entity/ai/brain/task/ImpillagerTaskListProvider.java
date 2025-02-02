@@ -4,10 +4,10 @@ package com.impillagers.mod.entity.ai.brain.task;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.impillagers.mod.entity.ModEntities;
 import com.impillagers.mod.entity.custom.ImpillagerEntity;
 import com.mojang.datafixers.util.Pair;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -17,26 +17,33 @@ import net.minecraft.entity.ai.brain.Brain;
 import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.ai.brain.sensor.Sensor;
 import net.minecraft.entity.ai.brain.task.*;
-import net.minecraft.entity.mob.PiglinBrain;
-import net.minecraft.entity.mob.PiglinEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.TimeHelper;
+import net.minecraft.util.math.intprovider.UniformIntProvider;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.poi.PointOfInterestTypes;
 
 public class ImpillagerTaskListProvider {
+
+    private static final UniformIntProvider AVOID_MEMORY_DURATION = TimeHelper.betweenSeconds(5, 20);
 
     public static ImmutableList<Pair<Integer, ? extends Task<? super VillagerEntity>>> createCoreTasks(VillagerProfession profession, float speed) {
         return ImmutableList.of(
                 Pair.of(0, new StayAboveWaterTask(0.8F)),
                 Pair.of(0, OpenDoorsTask.create()),
                 Pair.of(0, new LookAroundTask(45, 90)),
-                Pair.of(0, new PanicTask()),
                 Pair.of(0, WakeUpTask.create()),
                 Pair.of(0, HideWhenBellRingsTask.create()),
                 Pair.of(0, StartRaidTask.create()),
                 Pair.of(0, ForgetCompletedPointOfInterestTask.create(profession.heldWorkstation(), MemoryModuleType.JOB_SITE)),
                 Pair.of(0, ForgetCompletedPointOfInterestTask.create(profession.acquirableWorkstation(), MemoryModuleType.POTENTIAL_JOB_SITE)),
+                Pair.of(0, RangedApproachTask.create(1.0F)),
+                Pair.of(0, MeleeAttackTask.create(20)),
+                Pair.of(0, ForgetAttackTargetTask.create()),
                 Pair.of(1, new MoveToTargetTask()),
                 Pair.of(2, WorkStationCompetitionTask.create()),
                 Pair.of(3, new FollowCustomerTask(speed)),
@@ -56,15 +63,17 @@ public class ImpillagerTaskListProvider {
                 Pair.of(10, LoseJobOnSiteLossTask.create())
         );
     }
+
     public static ImmutableList<Pair<Integer, ? extends Task<? super VillagerEntity>>> createIdleTasks(VillagerProfession profession, float speed) {
         return ImmutableList.of(
+
                 Pair.of(
                         2,
                         new RandomTask<>(
                                 ImmutableList.of(
-                                        Pair.of(FindEntityTask.create(EntityType.VILLAGER, 8, MemoryModuleType.INTERACTION_TARGET, speed, 2), 2),
+                                        Pair.of(FindEntityTask.create(ModEntities.IMPILLAGER, 8, MemoryModuleType.INTERACTION_TARGET, speed, 2), 2),
                                         Pair.of(
-                                                FindEntityTask.create(EntityType.VILLAGER, 8, PassiveEntity::isReadyToBreed, PassiveEntity::isReadyToBreed, MemoryModuleType.BREED_TARGET, speed, 2), 1
+                                                FindEntityTask.create(ModEntities.IMPILLAGER, 8, PassiveEntity::isReadyToBreed, PassiveEntity::isReadyToBreed, MemoryModuleType.BREED_TARGET, speed, 2), 1
                                         ),
                                         Pair.of(FindEntityTask.create(EntityType.CAT, 8, MemoryModuleType.INTERACTION_TARGET, speed, 2), 1),
                                         Pair.of(FindWalkTargetTask.create(speed), 1),
@@ -120,39 +129,95 @@ public class ImpillagerTaskListProvider {
                 )
         );
     }
-    public static ImmutableList<Pair<Integer, ? extends Task<? super VillagerEntity>>> createFightTasks(VillagerEntity impillager, float speed) {
-        return ImmutableList.of(
-                        Pair.of(0, ForgetAttackTargetTask.create((Predicate<LivingEntity>)(target -> !isPreferredAttackTarget(impillager, target)))),
-                        Pair.of(0, AttackTask.create(5, 0.75F)),
-                        Pair.of(0, RangedApproachTask.create(1.0F)),
-                        Pair.of(0, MeleeAttackTask.create(20)),
-                        Pair.of(0, new CrossbowAttackTask()),
-                        Pair.of(0, ForgetTask.create(ImpillagerTaskListProvider::getNearestVillager, MemoryModuleType.ATTACK_TARGET))
-                );
-    }
-    private static boolean isPreferredAttackTarget(VillagerEntity impillager, LivingEntity target) {
-        return getPreferredTarget(impillager).filter(preferredTarget -> preferredTarget == target).isPresent();
+    public static void refreshActivities(ImpillagerEntity impillager) {
+
+        Brain<VillagerEntity> brain = impillager.getBrain();
+
+        Activity activity = (Activity)brain.getFirstPossibleNonCoreActivity().orElse(null);
+        brain.resetPossibleActivities(ImmutableList.of(Activity.IDLE, Activity.AVOID, Activity.WORK, Activity.PLAY, Activity.MEET, Activity.REST, Activity.PANIC, Activity.PRE_RAID, Activity.RAID, Activity.HIDE));
+        Activity activity2 = (Activity)brain.getFirstPossibleNonCoreActivity().orElse(null);
+        if (activity != activity2) {
+            getSoundEvent(impillager).ifPresent(impillager::playSound);
+       }
+
+        impillager.setAttacking(brain.hasMemoryModule(MemoryModuleType.ATTACK_TARGET));
     }
 
-    private static Optional<? extends LivingEntity> getPreferredTarget(VillagerEntity impillager) {
-        Brain<VillagerEntity> brain = impillager.getBrain();
-        if (getNearestVillager(impillager)) {
-            return Optional.empty();
+    public static Optional<SoundEvent> getSoundEvent(ImpillagerEntity impillager) {
+        return impillager.getBrain().getFirstPossibleNonCoreActivity().map(activity -> getSoundEvent(impillager, activity));
+    }
+
+    private static SoundEvent getSoundEvent(ImpillagerEntity impillager, Activity activity) {
+        if (activity == Activity.AVOID) {
+            return SoundEvents.ENTITY_HOGLIN_RETREAT;
+        } else if (activity == Activity.FIGHT) {
+            return SoundEvents.ENTITY_HOGLIN_ANGRY;
         } else {
-            Optional<LivingEntity> optional = LookTargetUtil.getEntity(impillager, MemoryModuleType.ANGRY_AT);
-            if (optional.isPresent() && Sensor.testAttackableTargetPredicateIgnoreVisibility(impillager, (LivingEntity) optional.get())) {
-                return optional;
+            return null;
+        }
+    }
+
+    public static void onAttacked(ImpillagerEntity impillager, LivingEntity attacker) {
+        Brain<VillagerEntity> brain = impillager.getBrain();
+        brain.forget(MemoryModuleType.PACIFIED);
+        brain.forget(MemoryModuleType.BREED_TARGET);
+        if (impillager.isBaby()) {
+            avoidEnemy(impillager, attacker);
+        } else {
+            targetEnemy(impillager, attacker);
+        }
+    }
+
+    private static void targetEnemy(ImpillagerEntity impillager, LivingEntity target) {
+        if (!impillager.getBrain().hasActivity(Activity.AVOID)) {
+            if (target.getType() != ModEntities.IMPILLAGER) {
+                if (!LookTargetUtil.isNewTargetTooFar(impillager, target, 4.0)) {
+                    if (Sensor.testAttackableTargetPredicate(impillager, target)) {
+                        setAttackTarget(impillager, target);
+                    }
+                }
             }
+        }
+    }
+
+    private static void avoidEnemy(ImpillagerEntity impillager, LivingEntity target) {
+        Brain<VillagerEntity> brain = impillager.getBrain();
+        LivingEntity livingEntity = LookTargetUtil.getCloserEntity(impillager, brain.getOptionalRegisteredMemory(MemoryModuleType.AVOID_TARGET), target);
+        livingEntity = LookTargetUtil.getCloserEntity(impillager, brain.getOptionalRegisteredMemory(MemoryModuleType.ATTACK_TARGET), livingEntity);
+        avoid(impillager, livingEntity);
+    }
+
+    private static void avoid(ImpillagerEntity impillager, LivingEntity target) {
+        impillager.getBrain().forget(MemoryModuleType.ATTACK_TARGET);
+        impillager.getBrain().forget(MemoryModuleType.WALK_TARGET);
+        impillager.getBrain().remember(MemoryModuleType.AVOID_TARGET, target, (long)AVOID_MEMORY_DURATION.get(impillager.getWorld().random));
+    }
+
+    private static void setAttackTarget(ImpillagerEntity impillager, LivingEntity target) {
+        Brain<VillagerEntity> brain = impillager.getBrain();
+        brain.forget(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+        brain.remember(MemoryModuleType.ATTACK_TARGET, target, 40L);
+    }
+
+    private static <T extends VillagerEntity> Optional<? extends LivingEntity> getNearestVisibleTargetablePlayerAdapter(T entity) {
+        if (entity instanceof ImpillagerEntity impillager) {
+            return !isNearPlayer(impillager)
+                    ? impillager.getBrain().getOptionalRegisteredMemory(MemoryModuleType.NEAREST_VISIBLE_TARGETABLE_PLAYER)
+                    : Optional.empty();
         }
         return Optional.empty();
     }
-    private static boolean getNearestVillager(VillagerEntity impillager) {
-        Brain<VillagerEntity> brain = impillager.getBrain();
-        if (brain.hasMemoryModule(com.impillagers.mod.entity.ai.brain.MemoryModuleType.NEAREST_VISIBLE_VILLAGER)) {
-            LivingEntity livingEntity = (LivingEntity)brain.getOptionalRegisteredMemory(com.impillagers.mod.entity.ai.brain.MemoryModuleType.NEAREST_VISIBLE_VILLAGER).get();
-            return impillager.isInRange(livingEntity, 6.0);
-        } else {
-            return false;
-        }
+    protected static boolean isNearPlayer(VillagerEntity impillager) {
+        return impillager.getBrain().hasMemoryModule(MemoryModuleType.PACIFIED);
     }
+
+
+    private static Optional<? extends LivingEntity> getAttackTarget(VillagerEntity villager) {
+        return LookTargetUtil.hasBreedTarget(villager) ? Optional.empty() : villager.getBrain().getOptionalRegisteredMemory(MemoryModuleType.ATTACK_TARGET);
+    }
+
+    private static boolean isHuntingTarget(LivingEntity impillager, LivingEntity target) {
+        return target.getType() == EntityType.VILLAGER && Random.create(impillager.getWorld().getTime()).nextFloat() < 1F;
+    }
+
 }

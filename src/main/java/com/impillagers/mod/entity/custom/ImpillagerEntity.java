@@ -8,8 +8,7 @@ import com.impillagers.mod.entity.ai.brain.task.ImpillagerTaskListProvider;
 import com.impillagers.mod.item.ModItems;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.entity.AnimationState;
-import net.minecraft.entity.EntityType;
+import net.minecraft.entity.*;
 import net.minecraft.entity.ai.brain.*;
 import net.minecraft.entity.ai.brain.sensor.Sensor;
 import net.minecraft.entity.ai.brain.sensor.SensorType;
@@ -17,6 +16,9 @@ import net.minecraft.entity.ai.brain.task.VillagerTaskListProvider;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.Hoglin;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.VillagerEntity;
@@ -30,12 +32,17 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.VillagerProfession;
+import net.minecraft.village.raid.Raid;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 public class ImpillagerEntity extends VillagerEntity {
     public final AnimationState idleAnimationState = new AnimationState();
     private int idleAnimationTimeout = 0;
+    private boolean natural;
+    private int levelUpTimer;
+    private boolean levelingUp;
+    private PlayerEntity lastCustomer;
 
     public ImpillagerEntity(EntityType<? extends VillagerEntity> entityType, World world) {
         super(entityType, world);
@@ -64,6 +71,49 @@ public class ImpillagerEntity extends VillagerEntity {
             this.setupAnimationStates();
         }
     }
+
+    @Override
+    protected void mobTick() {
+        this.getWorld().getProfiler().push("villagerBrain");
+        this.getBrain().tick((ServerWorld)this.getWorld(), this);
+        this.getWorld().getProfiler().pop();
+        ImpillagerTaskListProvider.refreshActivities(this);
+        if (this.natural) {
+            this.natural = false;
+        }
+
+        if (!this.hasCustomer() && this.levelUpTimer > 0) {
+            this.levelUpTimer--;
+            if (this.levelUpTimer <= 0) {
+                if (this.levelingUp) {
+                    this.levelUp();
+                    this.levelingUp = false;
+                }
+
+                this.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 200, 0));
+            }
+        }
+
+        if (this.lastCustomer != null && this.getWorld() instanceof ServerWorld) {
+            ((ServerWorld)this.getWorld()).handleInteraction(EntityInteraction.TRADE, this.lastCustomer, this);
+            this.getWorld().sendEntityStatus(this, EntityStatuses.ADD_VILLAGER_HAPPY_PARTICLES);
+            this.lastCustomer = null;
+        }
+
+        if (!this.isAiDisabled() && this.random.nextInt(100) == 0) {
+            Raid raid = ((ServerWorld)this.getWorld()).getRaidAt(this.getBlockPos());
+            if (raid != null && raid.isActive() && !raid.isFinished()) {
+                this.getWorld().sendEntityStatus(this, EntityStatuses.ADD_SPLASH_PARTICLES);
+            }
+        }
+
+        if (this.getVillagerData().getProfession() == VillagerProfession.NONE && this.hasCustomer()) {
+            this.resetCustomer();
+        }
+
+        super.mobTick();
+    }
+
 
     //Animation
 
@@ -171,7 +221,6 @@ public class ImpillagerEntity extends VillagerEntity {
         );
         brain.setTaskList(Activity.REST, VillagerTaskListProvider.createRestTasks(villagerProfession, 0.5F));
         brain.setTaskList(Activity.IDLE, ImpillagerTaskListProvider.createIdleTasks(villagerProfession, 0.5F));
-        brain.setTaskList(Activity.FIGHT, ImpillagerTaskListProvider.createFightTasks(this, 0.5F));
         brain.setTaskList(Activity.PANIC, VillagerTaskListProvider.createPanicTasks(villagerProfession, 0.5F));
         brain.setTaskList(Activity.PRE_RAID, VillagerTaskListProvider.createPreRaidTasks(villagerProfession, 0.5F));
         brain.setTaskList(Activity.RAID, VillagerTaskListProvider.createRaidTasks(villagerProfession, 0.5F));
@@ -280,5 +329,37 @@ public class ImpillagerEntity extends VillagerEntity {
                 tradeOffer.increaseSpecialPrice(-MathHelper.floor((float) i * tradeOffer.getPriceMultiplier()));
             }
         }
+    }
+
+    //Attack
+
+    @Override
+    public boolean damage(DamageSource source, float amount) {
+        boolean bl = super.damage(source, amount);
+        if (this.getWorld().isClient) {
+            return false;
+        } else {
+            if (bl && source.getAttacker() instanceof LivingEntity) {
+                ImpillagerTaskListProvider.onAttacked(this, (LivingEntity)source.getAttacker());
+            }
+            return bl;
+        }
+    }
+    @Override
+    public boolean tryAttack(Entity target) {
+        if (!(target instanceof LivingEntity)) {
+            return false;
+        } else {
+            this.getWorld().sendEntityStatus(this, EntityStatuses.PLAY_ATTACK_SOUND);
+            this.playSound(SoundEvents.ENTITY_HOGLIN_ATTACK);
+            return Hoglin.tryAttack(this, (LivingEntity)target);
+        }
+    }
+
+    //Misc
+
+    private void levelUp() {
+        this.setVillagerData(this.getVillagerData().withLevel(this.getVillagerData().getLevel() + 1));
+        this.fillRecipes();
     }
 }
