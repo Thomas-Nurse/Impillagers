@@ -1,6 +1,8 @@
-// 1.21.1	2025-02-01T16:39:12.998971894	Impillagers/Model Definitions
+// 1.21.1	2025-02-03T14:49:50.510549262	Impillagers/Model Definitions
+dffd1b7765a9572a3f693eb17324a5bafc326f3e assets/impillagers/models/item/fake_gold_coin.json
 0238f697f11a6fcf3d6f9ee3ea4114fd01b59906 assets/impillagers/models/block/dung_block.json
 63ec6c618a3a23eab4cab9c52d7d3250de9b516e assets/impillagers/models/item/impillager_spawn_egg.json
 5bef0a98018f214e568c2be4af4b75a4e6e6ba05 assets/impillagers/blockstates/dung_block.json
 4fee6844b94de71b09d3869c58d718ab6371e67b assets/impillagers/models/item/dung_block.json
+0741d841fc1ec8071b9085b1594f74944f147be1 assets/impillagers/models/item/gold_coin.json
 1be2471844fd6895c9222d219ca17b5a8a5077c7 assets/impillagers/models/item/dung_ball.json

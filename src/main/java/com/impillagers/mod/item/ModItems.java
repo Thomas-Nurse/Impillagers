@@ -14,6 +14,8 @@ import net.minecraft.util.Identifier;
 public class ModItems {
 
     public static final Item DUNG_BALL = registerItem("dung_ball", new DungBallItem(new Item.Settings()));
+    public static final Item GOLD_COIN = registerItem("gold_coin", new Item(new Item.Settings()));
+    public static final Item FAKE_GOLD_COIN = registerItem("fake_gold_coin", new Item(new Item.Settings()));
     public static final Item IMPILLAGER_SPAWN_EGG = registerItem("impillager_spawn_egg", new SpawnEggItem(ModEntities.IMPILLAGER, 0x995F40, 0xDB635F, new Item.Settings()));
 
     private static Item registerItem(String name, Item item) {
@@ -27,6 +29,10 @@ public class ModItems {
         });
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS).register(fabricItemGroupEntries -> {
             fabricItemGroupEntries.add(IMPILLAGER_SPAWN_EGG);
+        });
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(fabricItemGroupEntries -> {
+            fabricItemGroupEntries.add(GOLD_COIN);
+            fabricItemGroupEntries.add(FAKE_GOLD_COIN);
         });
     }
 }
