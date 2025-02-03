@@ -16,8 +16,6 @@ import net.minecraft.entity.ai.brain.task.VillagerTaskListProvider;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.Hoglin;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PassiveEntity;
@@ -32,24 +30,19 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.VillagerProfession;
-import net.minecraft.village.raid.Raid;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 public class ImpillagerEntity extends VillagerEntity {
     public final AnimationState idleAnimationState = new AnimationState();
     private int idleAnimationTimeout = 0;
-    private boolean natural;
-    private int levelUpTimer;
-    private boolean levelingUp;
-    private PlayerEntity lastCustomer;
 
     public ImpillagerEntity(EntityType<? extends VillagerEntity> entityType, World world) {
         super(entityType, world);
         this.experiencePoints = 3;
     }
 
-    //Attributes
+    //-------------------------------------Attributes-------------------------------------
 
     public static DefaultAttributeContainer.Builder createVillagerAttributes() {
         return MobEntity.createMobAttributes()
@@ -59,7 +52,7 @@ public class ImpillagerEntity extends VillagerEntity {
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0);
     }
 
-    //Tick
+    //-------------------------------------Tick-------------------------------------
 
     @Override
     public void tick() {
@@ -72,50 +65,7 @@ public class ImpillagerEntity extends VillagerEntity {
         }
     }
 
-    @Override
-    protected void mobTick() {
-        this.getWorld().getProfiler().push("villagerBrain");
-        this.getBrain().tick((ServerWorld)this.getWorld(), this);
-        this.getWorld().getProfiler().pop();
-        ImpillagerTaskListProvider.refreshActivities(this);
-        if (this.natural) {
-            this.natural = false;
-        }
-
-        if (!this.hasCustomer() && this.levelUpTimer > 0) {
-            this.levelUpTimer--;
-            if (this.levelUpTimer <= 0) {
-                if (this.levelingUp) {
-                    this.levelUp();
-                    this.levelingUp = false;
-                }
-
-                this.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 200, 0));
-            }
-        }
-
-        if (this.lastCustomer != null && this.getWorld() instanceof ServerWorld) {
-            ((ServerWorld)this.getWorld()).handleInteraction(EntityInteraction.TRADE, this.lastCustomer, this);
-            this.getWorld().sendEntityStatus(this, EntityStatuses.ADD_VILLAGER_HAPPY_PARTICLES);
-            this.lastCustomer = null;
-        }
-
-        if (!this.isAiDisabled() && this.random.nextInt(100) == 0) {
-            Raid raid = ((ServerWorld)this.getWorld()).getRaidAt(this.getBlockPos());
-            if (raid != null && raid.isActive() && !raid.isFinished()) {
-                this.getWorld().sendEntityStatus(this, EntityStatuses.ADD_SPLASH_PARTICLES);
-            }
-        }
-
-        if (this.getVillagerData().getProfession() == VillagerProfession.NONE && this.hasCustomer()) {
-            this.resetCustomer();
-        }
-
-        super.mobTick();
-    }
-
-
-    //Animation
+    //-------------------------------------Animation-------------------------------------
 
     private void setupAnimationStates(){
         if (this.idleAnimationTimeout <= 0) {
@@ -126,7 +76,7 @@ public class ImpillagerEntity extends VillagerEntity {
         }
     }
 
-    //Brain
+    //-------------------------------------Brain-------------------------------------
 
     private static final ImmutableList<MemoryModuleType<?>> MEMORY_MODULES = ImmutableList.of(
             MemoryModuleType.HOME,
@@ -233,7 +183,7 @@ public class ImpillagerEntity extends VillagerEntity {
 
 
 
-    //Sounds
+    //-------------------------------------Sounds-------------------------------------
 
     @Nullable
     @Override
@@ -262,7 +212,7 @@ public class ImpillagerEntity extends VillagerEntity {
         return ModEntities.IMPILLAGER.create(world);
     }
 
-    //Traits
+    //-------------------------------------Traits-------------------------------------
 
     @Override
     public boolean canBeLeashed() {
@@ -279,7 +229,7 @@ public class ImpillagerEntity extends VillagerEntity {
         return this.experiencePoints;
     }
 
-    //Trade with Player
+    //-------------------------------------Trade with Player-------------------------------------
 
     @Override
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
@@ -331,7 +281,7 @@ public class ImpillagerEntity extends VillagerEntity {
         }
     }
 
-    //Attack
+    //-------------------------------------Attack-------------------------------------
 
     @Override
     public boolean damage(DamageSource source, float amount) {
@@ -354,12 +304,5 @@ public class ImpillagerEntity extends VillagerEntity {
             this.playSound(SoundEvents.ENTITY_HOGLIN_ATTACK);
             return Hoglin.tryAttack(this, (LivingEntity)target);
         }
-    }
-
-    //Misc
-
-    private void levelUp() {
-        this.setVillagerData(this.getVillagerData().withLevel(this.getVillagerData().getLevel() + 1));
-        this.fillRecipes();
     }
 }
