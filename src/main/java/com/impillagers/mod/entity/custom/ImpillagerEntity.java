@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.impillagers.mod.entity.ModEntities;
 import com.impillagers.mod.entity.ai.brain.task.ImpillagerTaskListProvider;
+import com.impillagers.mod.entity.mob.Impillager;
 import com.impillagers.mod.item.ModItems;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
@@ -302,7 +303,7 @@ public class ImpillagerEntity extends VillagerEntity {
         } else {
             this.getWorld().sendEntityStatus(this, EntityStatuses.PLAY_ATTACK_SOUND);
             this.playSound(SoundEvents.ENTITY_HOGLIN_ATTACK);
-            return Hoglin.tryAttack(this, (LivingEntity)target);
+            return Impillager.tryAttack(this, (LivingEntity)target);
         }
     }
 }
